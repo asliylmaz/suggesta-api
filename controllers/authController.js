@@ -11,17 +11,19 @@ const generateToken = (userId) => {
 
 // REGISTER
 exports.register = async (req, res) => {
+  console.log("REQ BODY:", req.body);
   try {
     const {
       name,
       surname,
+      username,
       email,
       password,
       birthdate,
     } = req.body;
 
     // 1️⃣ Zorunlu alan kontrolü
-    if (!name || !surname || !email || !password || !birthdate) {
+    if (!name || !surname || !email || !username || !password || !birthdate) {
       return res.status(400).json({
         success: false,
         message: "Zorunlu alanlar eksik",
@@ -34,6 +36,15 @@ exports.register = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Bu email zaten kullanılıyor",
+      });
+    }
+
+    // 2️⃣.1️⃣ Email daha önce kullanılmış mı?
+    const existUser = await User.findOne({ username });
+    if (existUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Bu kullanıcı adı zaten kullanılıyor",
       });
     }
 
@@ -54,6 +65,7 @@ exports.register = async (req, res) => {
       name,
       surname,
       email,
+      username,
       password,
       birthdate,
       role: "user",
@@ -73,6 +85,7 @@ exports.register = async (req, res) => {
           name: user.name,
           surname: user.surname,
           email: user.email,
+          username: user.username,
           role: user.role,
         },
       },
@@ -93,7 +106,6 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1️⃣ Zorunlu alanlar
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -101,8 +113,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // 2️⃣ Kullanıcı var mı?
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -110,7 +121,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // 3️⃣ Şifre doğru mu?
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -119,10 +129,8 @@ exports.login = async (req, res) => {
       });
     }
 
-    // 4️⃣ Token üret
     const token = generateToken(user._id);
 
-    // 5️⃣ Response
     res.status(200).json({
       success: true,
       message: "Giriş başarılı",
@@ -133,6 +141,7 @@ exports.login = async (req, res) => {
           name: user.name,
           surname: user.surname,
           email: user.email,
+          username: user.username,
           role: user.role,
         },
       },
