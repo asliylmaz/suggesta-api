@@ -53,6 +53,16 @@ router.get("/movie/now-playing", async (req, res, next) => {
     }
 });
 
+router.get("/movie/discover", async (req, res, next) => {
+    try {
+        const { with_genres, page } = req.query;
+        const data = await tmdbService.getMoviesByGenre(with_genres, page);
+        res.json(data);
+    } catch (error) {
+        next(error);
+    }
+});
+
 /**
  * GET /api/tmdb/movie/:id
  */
@@ -78,13 +88,10 @@ router.get("/movie/:id/images", async (req, res, next) => {
     }
 });
 
-router.get("/genre/:genreId", async (req, res, next) => {
+router.get("/tv/discover", async (req, res, next) => {
     try {
-        const { genreId } = req.params;
-        const { page } = req.query;
-
-        const data = await tmdbService.getUnifiedByGenre(genreId, page);
-
+        const { with_genres, page } = req.query;
+        const data = await tmdbService.getTvByGenre(with_genres, page);
         res.json(data);
     } catch (error) {
         next(error);
@@ -120,5 +127,6 @@ router.get("/tv/:id/images", async (req, res, next) => {
         next(error);
     }
 });
+
 
 module.exports = router;

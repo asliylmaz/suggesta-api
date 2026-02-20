@@ -128,34 +128,6 @@ exports.getMovieImages = async (id) => {
     }
 };
 
-exports.getTvByGenre = async (genreId, page = 1) => {
-    const { data } = await tmdbApi.get("/discover/tv", {
-        params: {
-            with_genres: genreId,
-            sort_by: "popularity.desc",
-            page,
-            language: "tr-TR",
-            include_adult: false
-        }
-    });
-
-    return data.results.map(normalizeTvSummary);
-};
-
-exports.getPopularSeries = async (page = 1) => {
-    const { data } = await tmdbApi.get("/tv/popular", {
-        params: {
-            page,
-            language: "tr-TR"
-        }
-    });
-
-    return {
-        page: data.page,
-        totalPages: data.total_pages,
-        results: data.results.map(normalizeTvSummary)
-    };
-};
 
 exports.getTvDetails = async (id) => {
     try {
@@ -180,41 +152,49 @@ exports.getTvDetails = async (id) => {
     }
 };
 
-exports.getUnifiedByGenre = async (genreId, page = 1) => {
-
-    const [movieRes, tvRes] = await Promise.all([
-        tmdbApi.get("/discover/movie", {
-            params: {
-                with_genres: genreId,
-                sort_by: "popularity.desc",
-                page,
-                language: "tr-TR",
-                include_adult: false
-            }
-        }),
-        tmdbApi.get("/discover/tv", {
-            params: {
-                with_genres: genreId,
-                sort_by: "popularity.desc",
-                page,
-                language: "tr-TR",
-                include_adult: false
-            }
-        })
-    ]);
-
-    const movies = movieRes.data.results.map(normalizeMovieSummary);
-    const tvShows = tvRes.data.results.map(normalizeTvSummary);
-
-    // Merge and sort by popularity
-    const merged = [...movies, ...tvShows]
-        .sort((a, b) => b.tmdbPopularity - a.tmdbPopularity);
+exports.getPopularSeries = async (page = 1) => {
+    const { data } = await tmdbApi.get("/tv/popular", {
+        params: {
+            page,
+            language: "tr-TR"
+        }
+    });
 
     return {
-        page: Number(page),
-        results: merged
+        page: data.page,
+        totalPages: data.total_pages,
+        results: data.results.map(normalizeTvSummary)
     };
 };
+
+exports.getTvByGenre = async (genreId, page = 1) => {
+    try {
+        console.log("TV GENRE:", genreId);
+
+        const { data } = await tmdbApi.get("/discover/tv", {
+            params: {
+                with_genres: genreId,
+                sort_by: "popularity.desc",
+                page,
+                language: "tr-TR",
+                include_adult: false
+            }
+        });
+
+        console.log("TMDB TV RESPONSE OK");
+
+        return {
+            page: data.page,
+            totalPages: data.total_pages,
+            results: data.results.map(normalizeTvSummary)
+        };
+
+    } catch (error) {
+        console.error("TV DISCOVER ERROR:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
 
 exports.getSeriesImages = async (id) => {
     try {
