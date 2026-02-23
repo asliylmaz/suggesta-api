@@ -17,6 +17,7 @@ app.use(
 /* ROUTES */
 app.use("/api/users", require("./routes/users"));
 app.use("/api/tmdb", tmdbRoutes);
+app.use("/api/media", require("./routes/media"));
 
 /* EXPORT */
 module.exports = app;

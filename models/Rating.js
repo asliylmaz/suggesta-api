@@ -15,15 +15,20 @@ const RatingSchema = new mongoose.Schema(
     },
 
     contentId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
-      refPath: "contentType",
+    },
+
+    tmdbType: {
+      type: String,
+      enum: ["movie", "tv", "series"],
+      required: false,
     },
 
     value: {
       type: Number,
-      min: 1,
-      max: 5,
+      min: 0,
+      max: 10,
       required: true,
     },
   },

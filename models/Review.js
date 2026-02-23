@@ -15,14 +15,26 @@ const ReviewSchema = new mongoose.Schema(
     },
 
     contentId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true,
-      refPath: "contentType",
+    },
+
+    tmdbType: {
+      type: String,
+      enum: ["movie", "tv", "series"],
+      required: false, // Sadece TMDB içerikleri için
     },
 
     text: {
       type: String,
       required: true,
+    },
+
+    rating: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 10,
     },
   },
   { timestamps: true }
