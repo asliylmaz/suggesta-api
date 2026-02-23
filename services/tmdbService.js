@@ -219,6 +219,38 @@ exports.getSeriesImages = async (id) => {
     }
 };
 
+exports.getMovieReviews = async (id, page = 1) => {
+    try {
+        const { data } = await tmdbApi.get(`/movie/${id}/reviews`, {
+            params: { page, language: "en-US" } // Reviews are usually richer in English, TMDB fallback handles it mostly
+        });
+        return {
+            page: data.page,
+            totalPages: data.total_pages,
+            results: data.results.map(normalizeReview)
+        };
+    } catch (error) {
+        console.error(`Error getting movie reviews for ID ${id}:`, error.message);
+        return { page: 1, totalPages: 1, results: [] };
+    }
+};
+
+exports.getTvReviews = async (id, page = 1) => {
+    try {
+        const { data } = await tmdbApi.get(`/tv/${id}/reviews`, {
+            params: { page, language: "en-US" }
+        });
+        return {
+            page: data.page,
+            totalPages: data.total_pages,
+            results: data.results.map(normalizeReview)
+        };
+    } catch (error) {
+        console.error(`Error getting TV reviews for ID ${id}:`, error.message);
+        return { page: 1, totalPages: 1, results: [] };
+    }
+};
+
 function normalizeMovieSummary(movie) {
     return {
         externalId: movie.id,
@@ -309,6 +341,19 @@ function normalizeTvDetail(tv) {
         networks: tv.networks?.map(n => n.name) || [],
 
         lastSyncedAt: new Date()
+    };
+}
+
+function normalizeReview(review) {
+    return {
+        id: review.id,
+        author: review.author,
+        username: review.author_details?.username,
+        avatarPath: buildImageUrl(review.author_details?.avatar_path, "w185"),
+        rating: review.author_details?.rating || null,
+        content: review.content,
+        createdAt: review.created_at,
+        url: review.url
     };
 }
 

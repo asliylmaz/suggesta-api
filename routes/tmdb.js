@@ -88,6 +88,17 @@ router.get("/movie/:id/images", async (req, res, next) => {
     }
 });
 
+router.get("/movie/:id/reviews", async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { page } = req.query;
+        const reviews = await tmdbService.getMovieReviews(id, page);
+        res.json(reviews);
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.get("/tv/discover", async (req, res, next) => {
     try {
         const { with_genres, page } = req.query;
@@ -128,5 +139,15 @@ router.get("/tv/:id/images", async (req, res, next) => {
     }
 });
 
+router.get("/tv/:id/reviews", async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { page } = req.query;
+        const reviews = await tmdbService.getTvReviews(id, page);
+        res.json(reviews);
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
